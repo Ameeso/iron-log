@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iron Log">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1B1A18">
+<title>Iron Log</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #1B1A18;
+    --surface: #221F1C;
+    --line: #38342E;
+    --chalk: #EDE7DB;
+    --chalk-dim: #948C7E;
+    --rust: #C4491D;
+    --rust-dim: #7A3015;
+    --mat: #7C8F5E;
+    --mat-dim: #3E4630;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    height: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .display {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    margin: 0;
+  }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 18px 14px;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+
+  header h1 {
+    font-size: 28px;
+    text-transform: uppercase;
+  }
+
+  header .sub {
+    color: var(--chalk-dim);
+    font-size: 13px;
+    margin-top: 2px;
+  }
+
+  .volume {
+    text-align: right;
+    font-family: 'Inter', sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .volume .num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--rust);
+    display: block;
+  }
+
+  .volume .lbl {
+    font-size: 10px;
+    color: var(--chalk-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  main {
+    flex: 1;
+    padding: 4px 18px 100px;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .exercise {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .exercise:last-child { border-bottom: none; }
+
+  .ex-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 4px;
+  }
+
+  .ex-name {
+    font-size: 18px;
+  }
+
+  .ex-target {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--chalk-dim);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    margin-left: 12px;
+  }
+
+  .ex-note {
+    color: var(--chalk-dim);
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 14px;
+  }
+
+  .set-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 1fr 44px;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .set-num {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--chalk-dim);
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .set-row input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+    padding: 10px 8px;
+    border-radius: 4px;
+    text-align: center;
+  }
+
+  .set-row input:focus {
+    outline: none;
+    border-color: var(--rust);
+  }
+
+  .set-row input::placeholder {
+    color: #55504A;
+  }
+
+  .done-btn {
+    width: 44px;
+    height: 40px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--chalk-dim);
+    font-size: 16px;
+    cursor: pointer;
+  }
+
+  .done-btn.active {
+    background: var(--mat-dim);
+    border-color: var(--mat);
+    color: var(--mat);
+  }
+
+  .set-row.done input {
+    border-color: var(--mat-dim);
+  }
+
+  .unit-row {
+    display: grid;
+    grid-template-columns: 28px 1fr 1fr 44px;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .unit-row span {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #55504A;
+    text-align: center;
+  }
+
+  .finish-btn {
+    display: block;
+    width: 100%;
+    padding: 16px;
+    margin-top: 24px;
+    background: var(--rust);
+    color: var(--chalk);
+    border: none;
+    border-radius: 4px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+  }
+
+  .finish-btn:active { background: var(--rust-dim); }
+
+  .toast {
+    position: fixed;
+    bottom: 84px;
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: var(--mat-dim);
+    color: var(--chalk);
+    border: 1px solid var(--mat);
+    padding: 10px 18px;
+    border-radius: 4px;
+    font-size: 13px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    display: flex;
+    z-index: 10;
+  }
+
+  nav button {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--chalk-dim);
+    font-family: 'Oswald', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 14px 4px 12px;
+    border-top: 2px solid transparent;
+    cursor: pointer;
+  }
+
+  nav button.active {
+    color: var(--chalk);
+    border-top-color: var(--rust);
+  }
+
+  .history-item {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .history-item .h-date {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .history-item .h-vol {
+    color: var(--rust);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .history-item .h-sets {
+    color: var(--chalk-dim);
+    font-size: 12px;
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .empty {
+    color: var(--chalk-dim);
+    font-size: 14px;
+    padding: 40px 0;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  .sync-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 14, 12, 0.92);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .sync-box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 28px 22px;
+    max-width: 380px;
+    width: 100%;
+  }
+
+  .sync-box h2 {
+    font-size: 20px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .sync-box p {
+    color: var(--chalk-dim);
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 18px;
+  }
+
+  .sync-box input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--line);
+    color: var(--chalk);
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 12px 10px;
+    border-radius: 4px;
+    margin-bottom: 14px;
+  }
+
+  .sync-box input:focus {
+    outline: none;
+    border-color: var(--rust);
+  }
+
+  .reset-link {
+    display: block;
+    text-align: center;
+    color: #55504A;
+    font-size: 12px;
+    margin-top: 30px;
+    text-decoration: underline;
+    background: none;
+    border: none;
+    width: 100%;
+    padding: 10px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1 id="day-title">PUSH</h1>
+      <div class="sub" id="day-sub">Chest · Shoulders · Triceps</div>
+    </div>
+    <div class="volume" id="volume-box">
+      <span class="num" id="volume-num">0</span>
+      <span class="lbl">kg this session</span>
+    </div>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<div class="toast" id="toast"></div>
+
+<nav>
+  <button data-tab="push" class="tab-btn">Push</button>
+  <button data-tab="pull" class="tab-btn">Pull</button>
+  <button data-tab="legs" class="tab-btn">Legs</button>
+  <button data-tab="history" class="tab-btn">Log</button>
+</nav>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyBboSrR5KyBZCnbalJ9l1y7k2_8MsNYh20",
+  authDomain: "ppl-log-2d1ff.firebaseapp.com",
+  projectId: "ppl-log-2d1ff",
+  storageBucket: "ppl-log-2d1ff.firebasestorage.app",
+  messagingSenderId: "68464577064",
+  appId: "1:68464577064:web:f3a4bcfd875ce1746c031d"
+};
+
+let auth = null;
+let db = null;
+let currentUser = null;
+let remoteData = {}; // in-memory mirror of everything stored for this account
+
+function isConfigured() {
+  return FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.apiKey !== "YOUR_API_KEY";
+}
+
+const PROGRAM = {
+  push: {
+    label: "Push",
+    sub: "Chest · Shoulders · Triceps",
+    exercises: [
+      { id: 'floor-press', name: 'DB Floor Press', target: '4 × 8–10', note: 'Lie on floor, press from chest, full lockout.', sets: 4 },
+      { id: 'ohp', name: 'Standing OHP', target: '3 × 8–10', note: 'Alternate KB and DB week to week.', sets: 3 },
+      { id: 'lat-raise', name: 'Lateral Raises', target: '3 × 12–15', note: 'Light weight, control the negative.', sets: 3 },
+      { id: 'cg-press', name: 'Close-Grip Floor Press', target: '3 × 10–12', note: 'Hands close together, triceps focus.', sets: 3 },
+      { id: 'curl', name: 'DB Bicep Curl', target: '3 × 10–12', note: 'Standing, no swinging.', sets: 3 },
+      { id: 'hammer', name: 'Hammer Curl', target: '3 × 10–12', note: 'Neutral grip, targets brachialis.', sets: 3 },
+      { id: 'ab-wheel', name: 'Ab Wheel Rollout', target: '3 × 8–12', note: 'From knees or toes.', sets: 3 },
+    ]
+  },
+  pull: {
+    label: "Pull",
+    sub: "Back · Rear Delts · Triceps",
+    exercises: [
+      { id: 'db-row', name: 'Bent-Over DB Row', target: '4 × 8–10', note: 'Hinge at hips, flat back, squeeze at top.', sets: 4 },
+      { id: 'band-pulldown', name: 'Band Pulldown', target: '3 × 10–12', note: 'Anchor high on a door, control the eccentric.', sets: 3 },
+      { id: 'single-row', name: 'Single-Arm Row', target: '3 × 10–12', note: 'Staggered stance, hand on opposite knee for support.', sets: 3 },
+      { id: 'rear-delt', name: 'Rear Delt Flye', target: '3 × 12–15', note: 'Bent over, light weight, strict form.', sets: 3 },
+      { id: 'oh-tricep', name: 'DB Overhead Tricep Ext.', target: '3 × 10–12', note: 'Full stretch at the bottom.', sets: 3 },
+      { id: 'kickback', name: 'Tricep Kickback', target: '3 × 12–15', note: 'Hinge position, elbow pinned to side.', sets: 3 },
+      { id: 'coc', name: 'Captains of Crush', target: '3 sets', note: 'Continue your existing gripper progression.', sets: 3 },
+    ]
+  },
+  legs: {
+    label: "Legs",
+    sub: "Squat · Hinge · Core · Arm Finisher",
+    exercises: [
+      { id: 'goblet-squat', name: 'Goblet Squat (KB)', target: '4 × 8–10', note: 'Hold KB at chest, go as deep as mobility allows.', sets: 4 },
+      { id: 'kb-swing', name: 'KB Swings', target: '3 × 15–20', note: 'Hip-hinge power movement.', sets: 3 },
+      { id: 'rdl', name: 'DB Romanian Deadlift', target: '3 × 8–10', note: 'Ease into load — build up gradually given hamstring history.', sets: 3 },
+      { id: 'lunge', name: 'Walking Lunges (DB)', target: '3 × 10', note: 'Bodyweight or light DBs to start.', sets: 3 },
+      { id: 'tgu', name: 'Turkish Get-Up (KB)', target: '2 × 3–5', note: 'Keep it light and controlled.', sets: 2 },
+      { id: 'core', name: 'Core Routine', target: '1 round', note: 'Alternate A/B: plank/dead bug/bird dog/Russian twists, or side plank/hollow hold/reverse crunch/suitcase carry.', sets: 1 },
+      { id: 'arm-finisher', name: 'Arm Finisher Superset', target: '2 × 15', note: 'Curls x15 + band tricep extension x15, short rest between.', sets: 2 },
+    ]
+  }
+};
+
+const DAY_ORDER = ['push', 'pull', 'legs'];
+let currentTab = 'push';
+let state = {}; // in-memory cache of current session inputs, per day
+
+function todayStr() {
+  const d = new Date();
+  return d.toISOString().slice(0, 10);
+}
+
+function fmtDate(str) {
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+const PREFIX = 'ironlog:';
+
+// Local cache always used as source of truth for instant reads;
+// mirrored up to Firestore (if configured) so other devices see it too.
+async function storageGet(key) {
+  try {
+    if (remoteData.hasOwnProperty(key)) return remoteData[key];
+    const raw = localStorage.getItem(PREFIX + key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+async function storageSet(key, value) {
+  try {
+    localStorage.setItem(PREFIX + key, JSON.stringify(value));
+    remoteData[key] = value;
+  } catch (e) {
+    console.error('local storage set failed', key, e);
+  }
+  if (db && currentUser) {
+    try {
+      await db.collection('logs').doc(currentUser.uid).set(
+        { payload: remoteData, updatedAt: Date.now() },
+        { merge: false }
+      );
+    } catch (e) {
+      console.error('sync push failed', e);
+      showToast('Saved locally — sync failed, will retry next save');
+      return false;
+    }
+  }
+  return true;
+}
+
+async function initSync() {
+  if (!isConfigured()) return; // no Firebase project set up — local-only mode
+  firebase.initializeApp(FIREBASE_CONFIG);
+  auth = firebase.auth();
+  db = firebase.firestore();
+
+  currentUser = await waitForInitialAuthState();
+
+  if (!currentUser) {
+    currentUser = await promptForAuth(); // blocks until sign-in, sign-up, or skip
+  }
+
+  if (!currentUser) {
+    remoteData = loadAllLocal();
+    return; // user chose to skip — local-only mode
+  }
+
+  try {
+    const snap = await db.collection('logs').doc(currentUser.uid).get();
+    if (snap.exists) {
+      const remote = snap.data().payload || {};
+      remoteData = { ...loadAllLocal(), ...remote };
+    } else {
+      remoteData = loadAllLocal();
+      await db.collection('logs').doc(currentUser.uid).set({ payload: remoteData, updatedAt: Date.now() });
+    }
+  } catch (e) {
+    console.error('Firestore read failed', e);
+    showToast('Could not reach sync server — using local data');
+    remoteData = loadAllLocal();
+  }
+}
+
+function waitForInitialAuthState() {
+  return new Promise(resolve => {
+    const unsub = auth.onAuthStateChanged(user => {
+      unsub();
+      resolve(user);
+    });
+  });
+}
+
+function loadAllLocal() {
+  const out = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith(PREFIX)) {
+      try { out[k.slice(PREFIX.length)] = JSON.parse(localStorage.getItem(k)); } catch (e) {}
+    }
+  }
+  return out;
+}
+
+function promptForAuth() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'sync-overlay';
+    let mode = 'signin'; // or 'signup'
+
+    function render() {
+      overlay.innerHTML = `
+        <div class="sync-box">
+          <h2>${mode === 'signin' ? 'Sign in' : 'Create account'}</h2>
+          <p>Sign in to sync your log across every device. Same account, same data, everywhere.</p>
+          <input type="email" id="auth-email" placeholder="Email" autocapitalize="off" autocorrect="off">
+          <input type="password" id="auth-password" placeholder="Password (6+ characters)">
+          <div id="auth-error" style="color: var(--rust); font-size: 12px; margin: -6px 0 14px; display:none;"></div>
+          <button id="auth-submit" class="finish-btn">${mode === 'signin' ? 'Sign In' : 'Create Account'}</button>
+          <button id="auth-switch" class="reset-link">${mode === 'signin' ? "New here? Create an account" : "Already have an account? Sign in"}</button>
+          <button id="auth-forgot" class="reset-link" style="${mode === 'signin' ? '' : 'display:none;'}">Forgot password?</button>
+          <button id="auth-skip" class="reset-link">Skip — use this device only</button>
+        </div>
+      `;
+      document.getElementById('auth-submit').addEventListener('click', submit);
+      document.getElementById('auth-switch').addEventListener('click', () => {
+        mode = mode === 'signin' ? 'signup' : 'signin';
+        render();
+      });
+      document.getElementById('auth-forgot').addEventListener('click', forgotPassword);
+      document.getElementById('auth-skip').addEventListener('click', () => {
+        overlay.remove();
+        resolve(null);
+      });
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('auth-error');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    async function submit() {
+      const email = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      if (!email || !password) { showError('Enter an email and password.'); return; }
+      try {
+        const cred = mode === 'signin'
+          ? await auth.signInWithEmailAndPassword(email, password)
+          : await auth.createUserWithEmailAndPassword(email, password);
+        overlay.remove();
+        resolve(cred.user);
+      } catch (e) {
+        showError(friendlyAuthError(e));
+      }
+    }
+
+    async function forgotPassword() {
+      const email = document.getElementById('auth-email').value.trim();
+      if (!email) { showError('Enter your email above first.'); return; }
+      try {
+        await auth.sendPasswordResetEmail(email);
+        showError('Reset email sent — check your inbox.');
+      } catch (e) {
+        showError(friendlyAuthError(e));
+      }
+    }
+
+    document.body.appendChild(overlay);
+    render();
+  });
+}
+
+function friendlyAuthError(e) {
+  const map = {
+    'auth/wrong-password': 'Wrong password.',
+    'auth/user-not-found': 'No account with that email — try creating one.',
+    'auth/email-already-in-use': 'That email already has an account — try signing in.',
+    'auth/weak-password': 'Password needs to be at least 6 characters.',
+    'auth/invalid-email': 'That email address doesn\'t look right.'
+  };
+  return map[e.code] || e.message;
+}
+
+function exportBackup() {
+  const data = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k.startsWith(PREFIX)) data[k] = localStorage.getItem(k);
+  }
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `iron-log-backup-${todayStr()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded');
+}
+
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = JSON.parse(e.target.result);
+      let count = 0;
+      for (const k in data) {
+        if (k.startsWith(PREFIX)) {
+          localStorage.setItem(k, data[k]);
+          remoteData[k.slice(PREFIX.length)] = JSON.parse(data[k]);
+          count++;
+        }
+      }
+      if (db && currentUser) {
+        try {
+          await db.collection('logs').doc(currentUser.uid).set(
+            { payload: remoteData, updatedAt: Date.now() },
+            { merge: false }
+          );
+        } catch (err) {
+          console.error('sync push after import failed', err);
+        }
+      }
+      showToast(`Restored ${count} records`);
+      state = {};
+      if (currentTab === 'history') {
+        await renderHistory();
+      } else {
+        await loadDay(currentTab);
+        renderDay(currentTab);
+      }
+    } catch (err) {
+      showToast('Could not read that backup file');
+    }
+  };
+  reader.readAsText(file);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1800);
+}
+
+function calcVolume(dayId) {
+  const day = state[dayId];
+  if (!day) return 0;
+  let vol = 0;
+  for (const exId in day) {
+    day[exId].forEach(row => {
+      if (row.done && row.weight && row.reps) {
+        vol += Number(row.weight) * Number(row.reps);
+      }
+    });
+  }
+  return Math.round(vol);
+}
+
+async function loadDay(dayId) {
+  if (state[dayId]) return;
+  const prog = PROGRAM[dayId];
+  const dayState = {};
+  for (const ex of prog.exercises) {
+    const last = await storageGet(`last:${dayId}:${ex.id}`);
+    const rows = [];
+    for (let i = 0; i < ex.sets; i++) {
+      rows.push({
+        weight: '',
+        reps: '',
+        done: false,
+        placeholderW: last ? String(last.weight) : '',
+        placeholderR: last ? String(last.reps) : ''
+      });
+    }
+    dayState[ex.id] = rows;
+  }
+  state[dayId] = dayState;
+}
+
+function renderDay(dayId) {
+  const prog = PROGRAM[dayId];
+  document.getElementById('day-title').textContent = prog.label.toUpperCase();
+  document.getElementById('day-sub').textContent = prog.sub;
+
+  const main = document.getElementById('main');
+  main.innerHTML = '';
+
+  prog.exercises.forEach(ex => {
+    const block = document.createElement('div');
+    block.className = 'exercise';
+
+    const head = document.createElement('div');
+    head.className = 'ex-head';
+    head.innerHTML = `<div class="ex-name">${ex.name}</div><div class="ex-target">${ex.target}</div>`;
+    block.appendChild(head);
+
+    const note = document.createElement('div');
+    note.className = 'ex-note';
+    note.textContent = ex.note;
+    block.appendChild(note);
+
+    const unitRow = document.createElement('div');
+    unitRow.className = 'unit-row';
+    unitRow.innerHTML = `<span></span><span>kg</span><span>reps</span><span></span>`;
+    block.appendChild(unitRow);
+
+    state[dayId][ex.id].forEach((row, idx) => {
+      const rowEl = document.createElement('div');
+      rowEl.className = 'set-row' + (row.done ? ' done' : '');
+
+      const setNum = document.createElement('div');
+      setNum.className = 'set-num';
+      setNum.textContent = idx + 1;
+
+      const wInput = document.createElement('input');
+      wInput.type = 'number';
+      wInput.inputMode = 'decimal';
+      wInput.placeholder = row.placeholderW || '—';
+      wInput.value = row.weight;
+      wInput.addEventListener('input', e => {
+        row.weight = e.target.value;
+        updateVolume();
+      });
+
+      const rInput = document.createElement('input');
+      rInput.type = 'number';
+      rInput.inputMode = 'numeric';
+      rInput.placeholder = row.placeholderR || '—';
+      rInput.value = row.reps;
+      rInput.addEventListener('input', e => {
+        row.reps = e.target.value;
+        updateVolume();
+      });
+
+      const doneBtn = document.createElement('button');
+      doneBtn.className = 'done-btn' + (row.done ? ' active' : '');
+      doneBtn.textContent = row.done ? '✓' : '○';
+      doneBtn.addEventListener('click', () => {
+        if (!row.weight) row.weight = row.placeholderW;
+        if (!row.reps) row.reps = row.placeholderR;
+        row.done = !row.done;
+        renderDay(dayId);
+      });
+
+      rowEl.appendChild(setNum);
+      rowEl.appendChild(wInput);
+      rowEl.appendChild(rInput);
+      rowEl.appendChild(doneBtn);
+      block.appendChild(rowEl);
+    });
+
+    main.appendChild(block);
+  });
+
+  const finishBtn = document.createElement('button');
+  finishBtn.className = 'finish-btn';
+  finishBtn.textContent = 'Finish Session';
+  finishBtn.addEventListener('click', () => finishSession(dayId));
+  main.appendChild(finishBtn);
+
+  const resetLink = document.createElement('button');
+  resetLink.className = 'reset-link';
+  resetLink.textContent = 'Clear today\'s inputs';
+  resetLink.addEventListener('click', () => clearDay(dayId));
+  main.appendChild(resetLink);
+
+  updateVolume();
+}
+
+function updateVolume() {
+  document.getElementById('volume-num').textContent = calcVolume(currentTab);
+}
+
+async function clearDay(dayId) {
+  delete state[dayId];
+  await loadDay(dayId);
+  renderDay(dayId);
+}
+
+async function finishSession(dayId) {
+  const prog = PROGRAM[dayId];
+  const dayState = state[dayId];
+  const totalVolume = calcVolume(dayId);
+
+  const anyDone = Object.values(dayState).some(rows => rows.some(r => r.done));
+  if (!anyDone) {
+    showToast('Mark at least one set done first');
+    return;
+  }
+
+  const topSets = {};
+  for (const ex of prog.exercises) {
+    const rows = dayState[ex.id].filter(r => r.done && r.weight && r.reps);
+    if (rows.length === 0) continue;
+    const top = rows.reduce((a, b) => Number(b.weight) > Number(a.weight) ? b : a);
+    topSets[ex.name] = { weight: top.weight, reps: top.reps };
+    await storageSet(`last:${dayId}:${ex.id}`, { weight: top.weight, reps: top.reps });
+  }
+
+  const histKey = `history:${dayId}`;
+  const hist = (await storageGet(histKey)) || [];
+  hist.unshift({ date: todayStr(), volume: totalVolume, topSets });
+  await storageSet(histKey, hist.slice(0, 25));
+
+  showToast('Session saved');
+  delete state[dayId];
+  await loadDay(dayId);
+  renderDay(dayId);
+}
+
+async function renderHistory() {
+  document.getElementById('day-title').textContent = 'LOG';
+  document.getElementById('day-sub').textContent = 'Recent sessions';
+  document.getElementById('volume-box').style.visibility = 'hidden';
+
+  const main = document.getElementById('main');
+  main.innerHTML = '<div class="empty">Loading…</div>';
+
+  let allHistory = [];
+  for (const dayId of DAY_ORDER) {
+    const hist = (await storageGet(`history:${dayId}`)) || [];
+    hist.forEach(h => allHistory.push({ ...h, day: PROGRAM[dayId].label }));
+  }
+  allHistory.sort((a, b) => b.date.localeCompare(a.date));
+
+  main.innerHTML = '';
+  if (allHistory.length === 0) {
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    empty.innerHTML = 'No sessions logged yet.<br>Finish a workout to see it here.';
+    main.appendChild(empty);
+    renderBackupControls(main);
+    return;
+  }
+
+  allHistory.slice(0, 20).forEach(h => {
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    const setsStr = Object.entries(h.topSets).map(([name, s]) => `${name} ${s.weight}kg×${s.reps}`).join(' · ');
+    item.innerHTML = `
+      <div class="h-date">${h.day} — ${fmtDate(h.date)}</div>
+      <div class="h-vol">${h.volume} kg total volume</div>
+      <div class="h-sets">${setsStr}</div>
+    `;
+    main.appendChild(item);
+  });
+
+  renderBackupControls(main);
+}
+
+function renderBackupControls(main) {
+  const wrap = document.createElement('div');
+  wrap.style.marginTop = '30px';
+
+  const exportBtn = document.createElement('button');
+  exportBtn.className = 'finish-btn';
+  exportBtn.style.background = 'var(--mat)';
+  exportBtn.textContent = 'Export Backup';
+  exportBtn.addEventListener('click', exportBackup);
+  wrap.appendChild(exportBtn);
+
+  const importLabel = document.createElement('label');
+  importLabel.className = 'reset-link';
+  importLabel.style.marginTop = '14px';
+  importLabel.style.cursor = 'pointer';
+  importLabel.textContent = 'Restore from backup file';
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = 'application/json';
+  fileInput.style.display = 'none';
+  fileInput.addEventListener('change', e => {
+    if (e.target.files[0]) importBackup(e.target.files[0]);
+  });
+  importLabel.appendChild(fileInput);
+  wrap.appendChild(importLabel);
+
+  const syncStatus = document.createElement('div');
+  syncStatus.style.textAlign = 'center';
+  syncStatus.style.fontSize = '12px';
+  syncStatus.style.color = 'var(--chalk-dim)';
+  syncStatus.style.marginTop = '20px';
+  if (currentUser) {
+    syncStatus.innerHTML = `Signed in as <strong style="color:var(--chalk)">${currentUser.email}</strong>`;
+  } else if (isConfigured()) {
+    syncStatus.textContent = 'Not signed in — this device only';
+  } else {
+    syncStatus.textContent = 'Sync not set up (local device only)';
+  }
+  wrap.appendChild(syncStatus);
+
+  if (isConfigured()) {
+    const authBtn = document.createElement('button');
+    authBtn.className = 'reset-link';
+    authBtn.textContent = currentUser ? 'Sign out' : 'Sign in';
+    authBtn.addEventListener('click', async () => {
+      if (currentUser) {
+        await auth.signOut();
+      } else {
+        await promptForAuth();
+      }
+      location.reload();
+    });
+    wrap.appendChild(authBtn);
+  }
+
+  main.appendChild(wrap);
+}
+
+async function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === tab);
+  });
+
+  if (tab === 'history') {
+    await renderHistory();
+  } else {
+    document.getElementById('volume-box').style.visibility = 'visible';
+    await loadDay(tab);
+    renderDay(tab);
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+});
+
+(async function start() {
+  await initSync();
+  switchTab('push');
+})();
+</script>
+
+</body>
+</html>
